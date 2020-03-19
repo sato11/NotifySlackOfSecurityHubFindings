@@ -1,0 +1,26 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Collect findings from security hub and notify them to SNS topic."
+
+Resources:
+  SlackNotificationTopic:
+    Type: "AWS::SNS::Topic"
+  CloudWatchEventRule:
+    Type: "AWS::Events::Rule"
+    Properties:
+      Name: !Ref AWS::StackName
+      Description: "Receive security hub findings and pass them to SNS topic."
+      EventPattern:
+        source:
+          - "aws.securityhub"
+        detail-type:
+          - "Security Hub Findings - Imported"
+        detail:
+          findings:
+            ProductFields:
+              aws/securityhub/SeverityLabel:
+                - CRITICAL
+                - HIGH
+                - MEDIUM
+      Targets:
+        - Arn: !Ref SlackNotificationTopic
+          Id: Id1
